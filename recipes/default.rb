@@ -122,11 +122,15 @@ ruby_block "block_until_operational" do
   action :nothing
 end
 
-template "/etc/default/jenkins"
+template "/etc/default/jenkins" do
+  mode 0644
+  notifies :restart "service[jenkins]"
+end
 
 template "/etc/init.d/jenkins" do
   source "jenkins"
   mode 0755
+  notifies :restart "service[jenkins]"
 end
 
 service "jenkins" do
