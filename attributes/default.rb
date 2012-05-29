@@ -44,6 +44,7 @@ default[:jenkins][:iptables_allow] = "disable"
 #download the latest version of plugins, bypassing update center
 #example:  { 'git' => {}, 'github' => { 'version' => '1.1' }, ... }
 default[:jenkins][:server][:plugins] = {}
+default[:jenkins][:server][:lock_version] = false
 
 #working around: http://tickets.opscode.com/browse/CHEF-1848
 #set to true if you have the CHEF-1848 patch applied

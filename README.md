@@ -49,7 +49,8 @@ Where the jenkins_login recipe is simply:
 Attributes
 ----------
 
-* jenkins[:version] - Specify the version of jenkins used.  By default it is latest
+* jenkins[:version] - Specify the version of jenkins used.  By default it is latest. Note that if the version is 'latest' and jenkins[:server][:lock_version] is `false`, then jenkins will be updated for every stable release.
+* jenkins[:war_sha] - The SHA-256 sum of the jenkins war file. If the SHA-256 sum of the currently installed war file matches this sum, it will not be downloaded again. Note that the checksum will not be automatically recorded. Also, if both `version` and `war_sha` are specified, `war_sha` will take precedence; i.e. if you want to upgrade jenkins by explicitly setting a new `version`, you will need to reset or delete `war_sha` as well.
 * jenkins[:mirror_url] - Specify the base URL to download the WAR and any plugins from
 * jenkins[:java_home] - Java install path, used for for cli commands
 * jenkins[:server][:home] - JENKINS_HOME directory
@@ -59,6 +60,7 @@ Attributes
 * jenkins[:server][:port] - TCP listen port for the Jenkins server
 * jenkins[:server][:url] - Base URL of the Jenkins server
 * jenkins[:server][:plugins] - Download the plugins in this list, bypassing update center. 
+* jenkins[:server][:lock_version] - If true and jenkins[:version] is 'latest', then the version and sha-256 of the war file that is installed will be recorded in the jenkins[:version] and jenkins[:war_sha] properties respectively. Doing so will lock the jenkins install to that version until manually modified. By default, this attribute is set to false
 * jenkins[:node][:name] - Name of the node within Jenkins
 * jenkins[:node][:description] - Jenkins node description
 * jenkins[:node][:executors] - Number of node executors
@@ -100,6 +102,7 @@ keys. The values can either be empty hashes or hashes containing the keys
 and 'download_url' (an explicit download url for the plugin). If either of these
 keys are omitted, then they will be recorded after the first run, and will be
 used on subsequent runs.
+
 
 'node_ssh' recipe
 -----------------
