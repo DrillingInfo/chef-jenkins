@@ -125,13 +125,13 @@ end
 
 template "/etc/default/jenkins" do
   mode 0644
-  notifies :restart "service[jenkins]"
+  notifies :restart, "service[jenkins]"
 end
 
 template "/etc/init.d/jenkins" do
   source "jenkins"
   mode 0755
-  notifies :restart "service[jenkins]"
+  notifies :restart, "service[jenkins]"
 end
 
 directory "/var/log/jenkins" do
@@ -194,24 +194,32 @@ execute "start jenkins" do
 end
 
 ruby_block 'lock jenkins version' do
-    block do
-        require 'zip/zip'
-        require 'chef/mixin/checksum'
+    require 'chef/mixin/checksum'
+    require 'zip/zip'
 
-        def extract_version_from_war warfile
-            Zip::ZipFile.open(warfile) do |zipfile|
-                zipfile.get_input_stream("META-INF/MANIFEST.MF") do |manifest|
-                    manifest.each_line do |line|
-                        if line.start_with?("Jenkins-Version") then
-                            return line.split(":").last.strip
-                        end
+    extend Chef::Mixin::Checksum
+
+    @warfile = war_file
+
+    def extract_version
+        Zip::ZipFile.open(@warfile) do |zipfile|
+            zipfile.get_input_stream("META-INF/MANIFEST.MF") do |manifest|
+                manifest.each_line do |line|
+                    if line.start_with?("Jenkins-Version") then
+                        return line.split(":").last.strip
                     end
                 end
             end
-         end
-
-         node.set[:jenkins][:version] = extract_version_from_war war_file
-         node.set[:jenkins][:war_sha] = Chef::Mixins::Checksum.checksum war_file
+        end
     end
-    only_if node[:jenkins][:version] == 'latest' && node[:jenkins][:server][:lock_version]
+
+    def calculate_checksum
+        checksum @warfile
+    end
+
+    block do
+         node.set[:jenkins][:version] = extract_version
+         node.set[:jenkins][:war_sha] = calculate_checksum
+    end
+    only_if { node[:jenkins][:version] == 'latest' && node[:jenkins][:server][:lock_version] }
 end
