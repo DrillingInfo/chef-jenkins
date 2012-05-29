@@ -25,6 +25,9 @@
 pid_file = "/var/run/jenkins/jenkins.pid"
 pkey = "#{node[:jenkins][:server][:home]}/.ssh/id_rsa"
 tmp = "/tmp"
+war_file = "/usr/share/jenkins/jenkins.war"
+
+chef_gem 'rubyzip'
 
 user node[:jenkins][:server][:user] do
   home node[:jenkins][:server][:home]
@@ -74,7 +77,7 @@ directory "/usr/share/jenkins" do
   recursive true
 end
 
-remote_file "/usr/share/jenkins/jenkins.war" do
+remote_file war_file do
   source "#{node[:jenkins][:mirror_url]}/war-stable/#{node[:jenkins][:version]}/jenkins.war"
   owner "root"
   group "root"
@@ -122,13 +125,13 @@ end
 
 template "/etc/default/jenkins" do
   mode 0644
-  notifies :restart "service[jenkins]"
+  notifies :restart, "service[jenkins]"
 end
 
 template "/etc/init.d/jenkins" do
   source "jenkins"
   mode 0755
-  notifies :restart "service[jenkins]"
+  notifies :restart, "service[jenkins]"
 end
 
 directory "/var/log/jenkins" do
@@ -188,4 +191,35 @@ end
 execute "start jenkins" do
   command "/etc/init.d/jenkins start"
   not_if 'ps auxwww | grep [j]enkins'
+end
+
+ruby_block 'lock jenkins version' do
+    require 'chef/mixin/checksum'
+    require 'zip/zip'
+
+    extend Chef::Mixin::Checksum
+
+    @warfile = war_file
+
+    def extract_version
+        Zip::ZipFile.open(@warfile) do |zipfile|
+            zipfile.get_input_stream("META-INF/MANIFEST.MF") do |manifest|
+                manifest.each_line do |line|
+                    if line.start_with?("Jenkins-Version") then
+                        return line.split(":").last.strip
+                    end
+                end
+            end
+        end
+    end
+
+    def calculate_checksum
+        checksum @warfile
+    end
+
+    block do
+         node.set[:jenkins][:version] = extract_version
+         node.set[:jenkins][:war_sha] = calculate_checksum
+    end
+    only_if { node[:jenkins][:version] == 'latest' && node[:jenkins][:server][:lock_version] }
 end
