@@ -61,7 +61,7 @@ directory "#{node[:jenkins][:server][:home]}/plugins" do
 end
 
 node[:jenkins][:server][:plugins].each do |name, attributes|
-    chef_jenkins_plugin name do
+    jenkins_plugin name do
         version attributes[:version]
         download_url attributes[:download_url]
     end

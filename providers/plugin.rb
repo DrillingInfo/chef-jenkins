@@ -24,7 +24,7 @@ action :install do
         mode  "644"
         backup false
         checksum sha_for(new_resource)
-        notifies :record, resources('chef-jenkins_plugin' => new_resource.name), :delayed
+        notifies :record, resources('jenkins_plugin' => new_resource.name), :delayed
         notifies :restart, resources(:service => "jenkins"), :delayed
     end
 end
