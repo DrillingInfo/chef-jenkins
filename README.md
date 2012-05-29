@@ -57,8 +57,7 @@ Attributes
 * jenkins[:server][:group] - Jenkins user primary group
 * jenkins[:server][:port] - TCP listen port for the Jenkins server
 * jenkins[:server][:url] - Base URL of the Jenkins server
-* jenkins[:server][:plugins] - Download the plugins in this list, bypassing 
-  update center. 
+* jenkins[:server][:plugins] - Download the plugins in this list, bypassing update center. 
 * jenkins[:node][:name] - Name of the node within Jenkins
 * jenkins[:node][:description] - Jenkins node description
 * jenkins[:node][:executors] - Number of node executors
