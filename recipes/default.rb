@@ -129,6 +129,12 @@ template "/etc/init.d/jenkins" do
   mode 0755
 end
 
+directory "/var/log/jenkins" do
+  owner node[:jenkins][:server][:user]
+  group node[:jenkins][:server][:group]
+  mode 0755
+end
+
 service "jenkins" do
   supports [ :stop, :start, :restart, :status ]
   status_command "test -f #{pid_file} && kill -0 `cat #{pid_file}`"
