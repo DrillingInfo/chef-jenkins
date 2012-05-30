@@ -82,6 +82,7 @@ remote_file war_file do
   owner "root"
   group "root"
   mode 0644
+  notifies :restart, 'service[jenkins]'
 end
 
 package "daemon"
@@ -182,15 +183,6 @@ if node.jenkins.iptables_allow == "enable"
       enable false
     end
   end
-end
-service "jenkins" do
-  supports [ :stop, :start, :restart, :status ]
-  status_command "test -f #{pid_file} && kill -0 `cat #{pid_file}`"
-  action [:start,:enable]
-end
-execute "start jenkins" do
-  command "/etc/init.d/jenkins start"
-  not_if 'ps auxwww | grep [j]enkins'
 end
 
 ruby_block 'lock jenkins version' do
