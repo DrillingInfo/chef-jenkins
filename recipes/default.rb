@@ -144,7 +144,7 @@ end
 service "jenkins" do
   supports [ :stop, :start, :restart, :status ]
   status_command "test -f #{pid_file} && kill -0 `cat #{pid_file}`"
-  action :nothing
+  action [:enable, :start]
 end
 
 # restart if this run only added new plugins
